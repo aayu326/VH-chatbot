@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vantage Hall Chatbot - AI Powered - FIXED</title>
+    <title>Vantage Hall Chatbot - AI Powered - UPDATED</title>
 
     <style>
         * {
@@ -578,6 +578,32 @@
             box-shadow: 0 4px 12px rgba(26, 58, 82, 0.4);
         }
 
+        /* NEW: Back to Menu Button Styles */
+        .back-to-menu-btn {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #d4536c 0%, #b83e54 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-weight: 600;
+            display: none;
+        }
+
+        .back-to-menu-btn.show {
+            display: inline-block;
+        }
+
+        .back-to-menu-btn:hover {
+            background: linear-gradient(135deg, #b83e54 0%, #9a2f43 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 83, 108, 0.5);
+        }
+
         .chat-input {
             padding: 14px 16px;
             background: white;
@@ -794,13 +820,16 @@
 
         <!-- Quick Replies -->
         <div class="quick-replies" id="quickReplies">
+            <!-- Back to Menu Button (Hidden by default) -->
+            <button class="back-to-menu-btn" id="backToMenuBtn">⬅️ Back to Menu</button>
+            
+            <!-- Default Quick Replies -->
             <button class="quick-reply-btn" data-reply="faq">❓ FAQ</button>
+            <button class="quick-reply-btn" data-reply="emotional">💚 Emotional Support</button>
             <button class="quick-reply-btn" data-reply="What is the admission process?">📝 Admissions</button>
             <button class="quick-reply-btn" data-reply="Tell me about fee structure">💰 Fee Structure</button>
             <button class="quick-reply-btn" data-reply="What are hostel facilities?">🏡 Hostel</button>
             <button class="quick-reply-btn" data-reply="How can I contact you?">📞 Contact</button>
-            <button class="quick-reply-btn" data-reply="What sports are available?">⚽ Sports</button>
-            <button class="quick-reply-btn" data-reply="Tell me about curriculum">📚 Curriculum</button>
         </div>
 
         <!-- Chat Input -->
@@ -818,8 +847,8 @@
         // ==============================================
         // CONFIGURATION
         // ==============================================
-        const API_URL = "https://openaimodel.vercel.app/api/chat";
-        const REGISTER_URL = "https://openaimodel.vercel.app/api/register";
+        const API_URL = "https://vh-chatbot.vercel.app/api/chat";
+        const REGISTER_URL = "https://vh-chatbot.vercel.app/api/register";
 
         // ==============================================
         // DOM ELEMENTS
@@ -835,6 +864,7 @@
         const registrationOverlay = document.getElementById('registrationOverlay');
         const userDetailsForm = document.getElementById('userDetailsForm');
         const submitBtn = document.getElementById('submitBtn');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
 
         // Form inputs
         const userName = document.getElementById('userName');
@@ -842,19 +872,63 @@
         const userPhone = document.getElementById('userPhone');
 
         // ==============================================
-        // STATE MANAGEMENT - ⭐ YE SECTION UPDATE HUA HAI
+        // STATE MANAGEMENT - UPDATED
         // ==============================================
         let isProcessing = false;
         let isRegistered = false;
         let userData = {};
         let currentTopic = null;
         let currentOptionLevel = null;
-        let currentSelectedOption = null;  // ⭐ YE NEW VARIABLE HAI - IMPORTANT!
+        let currentSelectedOption = null;
+        let interactionCount = 0; // NEW: Track interactions in FAQ/Emotional sections
 
         // Check if user is already registered
         if (localStorage.getItem('vhUserRegistered')) {
             isRegistered = true;
             userData = JSON.parse(localStorage.getItem('vhUserData'));
+        }
+
+        // ==============================================
+        // BACK TO MENU FUNCTIONALITY
+        // ==============================================
+        backToMenuBtn.addEventListener('click', () => {
+            resetToMainMenu();
+        });
+
+        function resetToMainMenu() {
+            currentTopic = null;
+            currentOptionLevel = null;
+            currentSelectedOption = null;
+            interactionCount = 0;
+            
+            hideBackButton();
+            showDefaultQuickReplies();
+            
+            addMessage("Back to main menu! How can I help you?", 'bot');
+        }
+
+        function showBackButton() {
+            backToMenuBtn.classList.add('show');
+        }
+
+        function hideBackButton() {
+            backToMenuBtn.classList.remove('show');
+        }
+
+        function showDefaultQuickReplies() {
+            quickReplies.innerHTML = `
+                <button class="back-to-menu-btn" id="backToMenuBtn">⬅️ Back to Menu</button>
+                <button class="quick-reply-btn" data-reply="faq">❓ FAQ</button>
+                <button class="quick-reply-btn" data-reply="emotional">💚 Emotional Support</button>
+                <button class="quick-reply-btn" data-reply="What is the admission process?">📝 Admissions</button>
+                <button class="quick-reply-btn" data-reply="Tell me about fee structure">💰 Fee Structure</button>
+                <button class="quick-reply-btn" data-reply="What are hostel facilities?">🏡 Hostel</button>
+                <button class="quick-reply-btn" data-reply="How can I contact you?">📞 Contact</button>
+            `;
+            
+            // Re-attach event listener for new back button
+            const newBackBtn = document.getElementById('backToMenuBtn');
+            newBackBtn.addEventListener('click', resetToMainMenu);
         }
 
         // ==============================================
@@ -872,7 +946,6 @@
                     registrationOverlay.classList.add('hidden');
                     userInput.focus();
                     
-                    // Show welcome message if first time
                     if (!localStorage.getItem('vhWelcomeShown')) {
                         setTimeout(() => {
                             addMessage(`Hello ${userData.name}! 👋 Welcome to Vantage Hall Girls' Residential School, Dehradun! I'm your AI assistant and I can help you with information about admissions, facilities, curriculum, fees, and much more. How can I assist you today?`, 'bot');
@@ -905,16 +978,13 @@
         userDetailsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
             document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
             
-            // Get values
             const name = userName.value.trim();
             const email = userEmail.value.trim();
             const phone = userPhone.value.trim();
             
-            // Validate
             let hasError = false;
             
             if (!name) {
@@ -939,12 +1009,10 @@
             
             if (hasError) return;
             
-            // Show loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="loading-spinner"></span>Processing...';
             
             try {
-                // Send to backend
                 const response = await fetch(REGISTER_URL, {
                     method: 'POST',
                     headers: {
@@ -956,21 +1024,17 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Store user data
                     userData = { name, email, phone };
                     localStorage.setItem('vhUserRegistered', 'true');
                     localStorage.setItem('vhUserData', JSON.stringify(userData));
                     isRegistered = true;
                     
-                    // Hide registration form
                     registrationOverlay.classList.add('hidden');
                     
-                    // Enable chat
                     userInput.disabled = false;
                     sendBtn.disabled = false;
                     userInput.focus();
                     
-                    // Show welcome message
                     setTimeout(() => {
                         addMessage(`Hello ${name}! 👋 Welcome to Vantage Hall Girls' Residential School, Dehradun! I'm your AI assistant and I can help you with information about admissions, facilities, curriculum, fees, and much more. How can I assist you today?`, 'bot');
                         localStorage.setItem('vhWelcomeShown', 'true');
@@ -988,25 +1052,20 @@
             }
         });
 
-        // ==============================================
-        // PHONE NUMBER INPUT - ALLOW ONLY NUMBERS
-        // ==============================================
         userPhone.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
         });
 
         // ==============================================
-        // SEND MESSAGE FUNCTION - ⭐ YE SECTION UPDATE HUA HAI
+        // SEND MESSAGE FUNCTION - UPDATED
         // ==============================================
         async function sendMessage() {
             const message = userInput.value.trim();
             if (message === '' || isProcessing) return;
 
-            // Add user message to UI
             addMessage(message, 'user');
             userInput.value = '';
             
-            // Set processing state
             isProcessing = true;
             typingIndicator.style.display = 'block';
             userInput.disabled = true;
@@ -1014,7 +1073,6 @@
             scrollToBottom();
 
             try {
-                // ⭐ IMPORTANT: Ab teen parameters send ho rahe hain
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -1024,7 +1082,7 @@
                         message,
                         lastTopic: currentTopic,
                         lastOptionLevel: currentOptionLevel,
-                        lastSelectedOption: currentSelectedOption  // ⭐ YE NEW PARAMETER HAI
+                        lastSelectedOption: currentSelectedOption
                     })
                 });
 
@@ -1034,35 +1092,44 @@
 
                 const data = await response.json();
                 
-                // Hide typing indicator
                 typingIndicator.style.display = 'none';
                 
                 if (data.success && data.reply) {
                     addMessage(data.reply, 'bot');
                     
-                    // ⭐ IMPORTANT: Context update with selectedOption
+                    // UPDATED: Handle context and interaction count
                     if (data.hasOptions) {
                         currentTopic = data.currentTopic;
                         currentOptionLevel = data.optionLevel;
                         currentSelectedOption = data.selectedOption !== undefined ? data.selectedOption : null;
                         
-                        // Debug log
+                        // Increment interaction count for FAQ/Emotional sections
+                        if (data.isFAQMenu || data.isEmotionalMenu) {
+                            interactionCount++;
+                        }
+                        
+                        // Show back button after any interaction in special menus
+                        if (data.isFAQMenu || data.isEmotionalMenu || interactionCount > 0) {
+                            showBackButton();
+                        }
+                        
                         console.log('✅ Context Updated:', {
                             topic: currentTopic,
                             level: currentOptionLevel,
-                            selected: currentSelectedOption
+                            selected: currentSelectedOption,
+                            interactions: interactionCount
                         });
                         
-                        // Show quick reply buttons for options
                         if (data.options && data.options.length > 0) {
                             showOptionButtons(data.options);
                         }
                     } else {
-                        // Reset context if no more options
-                        currentTopic = null;
-                        currentOptionLevel = null;
-                        currentSelectedOption = null;
-                        hideOptionButtons();
+                        // Don't auto-reset - user must manually go back
+                        // Just hide option buttons
+                        if (!currentTopic) {
+                            hideBackButton();
+                            showDefaultQuickReplies();
+                        }
                     }
                 } else {
                     throw new Error(data.error || 'Invalid response from server');
@@ -1091,8 +1158,12 @@
         // SHOW OPTION BUTTONS
         // ==============================================
         function showOptionButtons(options) {
+            // Keep back button, remove old options, add new ones
+            const backBtn = backToMenuBtn.cloneNode(true);
+            backBtn.addEventListener('click', resetToMainMenu);
+            
             quickReplies.innerHTML = '';
-            quickReplies.style.display = 'flex';
+            quickReplies.appendChild(backBtn);
             
             options.forEach(option => {
                 const btn = document.createElement('button');
@@ -1104,21 +1175,6 @@
                 };
                 quickReplies.appendChild(btn);
             });
-        }
-
-        // ==============================================
-        // HIDE OPTION BUTTONS
-        // ==============================================
-        function hideOptionButtons() {
-            quickReplies.innerHTML = `
-                <button class="quick-reply-btn" data-reply="faq">❓ FAQ</button>
-                <button class="quick-reply-btn" data-reply="What is the admission process?">📝 Admissions</button>
-                <button class="quick-reply-btn" data-reply="Tell me about fee structure">💰 Fee Structure</button>
-                <button class="quick-reply-btn" data-reply="What are hostel facilities?">🏡 Hostel</button>
-                <button class="quick-reply-btn" data-reply="How can I contact you?">📞 Contact</button>
-                <button class="quick-reply-btn" data-reply="What sports are available?">⚽ Sports</button>
-                <button class="quick-reply-btn" data-reply="Tell me about curriculum">📚 Curriculum</button>
-            `;
         }
 
         // ==============================================
@@ -1166,10 +1222,8 @@
         // EVENT LISTENERS
         // ==============================================
         
-        // Send button click
         sendBtn.addEventListener('click', sendMessage);
 
-        // Enter key press
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1177,7 +1231,6 @@
             }
         });
 
-        // Quick replies
         quickReplies.addEventListener('click', (e) => {
             if (e.target.classList.contains('quick-reply-btn')) {
                 const reply = e.target.getAttribute('data-reply');
@@ -1188,7 +1241,6 @@
             }
         });
 
-        // Escape to close chat
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && chatContainer.classList.contains('active')) {
                 chatToggle.click();
@@ -1205,14 +1257,9 @@
             }
         }, 1000);
 
-        // ⭐ DEBUG INFO ON LOAD
-        console.log('🎓 Vantage Hall Chatbot - FIXED VERSION');
-        console.log('✅ FAQ Navigation with selectedOption tracking enabled');
-        console.log('📌 Current state:', {
-            topic: currentTopic,
-            level: currentOptionLevel,
-            selected: currentSelectedOption
-        });
+        console.log('🎓 Vantage Hall Chatbot - UPDATED VERSION');
+        console.log('✅ FAQ + Emotional Support with Back to Menu');
+        console.log('📌 No auto-redirect from special menus');
     </script>
 
 </body>
