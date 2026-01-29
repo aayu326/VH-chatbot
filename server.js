@@ -1,4 +1,4 @@
-// server.js - WORKS WITHOUT OPENAI (Graceful Fallback)
+// server.js - developed by aayush 
 
 const fetch = require('node-fetch');
 const express = require('express');
@@ -14,7 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 // ==============================================
-// YOUR API KEYS
+// my api(for vantage)
+
 // ==============================================
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -31,7 +32,8 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'your-admin@vantagehall.org';
 const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 
 // ==============================================
-// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ + EMOTIONAL QUOTIENT
+// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ + EMOTIONAL QUOTIENT(updated by sahil sir)
+
 // ==============================================
 const KNOWLEDGE_BASE = {
   // ==============================================
@@ -576,7 +578,7 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
 }
 
 // ==============================================
-// EMAIL NOTIFICATION
+// EMAIL NOTIFICATION(satyeshwork326@gmail.com)
 // ==============================================
 async function sendAdminEmail(userDetails) {
   try {
@@ -930,3 +932,4 @@ app.listen(PORT, () => {
     console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
   }
 });
+
