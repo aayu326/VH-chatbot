@@ -1,4 +1,4 @@
-// server.js - UPDATED VERSION WITH EMOTIONAL QUOTIENT
+// server.js - WORKS WITHOUT OPENAI (Graceful Fallback)
 
 const fetch = require('node-fetch');
 const express = require('express');
@@ -165,7 +165,7 @@ const KNOWLEDGE_BASE = {
   },
 
   // ==============================================
-  // EMOTIONAL QUOTIENT MENU (NEW SECTION)
+  // EMOTIONAL QUOTIENT MENU
   // ==============================================
   emotional_menu: {
     keywords: ['emotional', 'emotional support', 'emotional quotient', 'wellbeing', 'mental health', 'care'],
@@ -419,25 +419,21 @@ const KNOWLEDGE_BASE = {
 };
 
 // ==============================================
-// SMART KEYWORD MATCHING - UPDATED
+// SMART KEYWORD MATCHING
 // ==============================================
 function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, lastSelectedOption = null) {
   const msg = userMessage.toLowerCase().trim();
   
-  // PRIORITY 1: Handle nested navigation (FAQ/Emotional) with proper context
   if (lastTopic && KNOWLEDGE_BASE[lastTopic]) {
     const topicData = KNOWLEDGE_BASE[lastTopic];
     
     if (topicData.hasOptions) {
-      // If in sub-menu (second level)
       if (lastOptionLevel === 'sub' && lastSelectedOption !== null && lastSelectedOption !== undefined) {
         const mainOption = topicData.options[lastSelectedOption];
         if (mainOption && mainOption.subOptions) {
-          // Check for EXACT matches in sub-options FIRST
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
               if (msg === trigger.toLowerCase()) {
-                console.log(`✅ Sub-option exact match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
@@ -451,11 +447,9 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
             }
           }
           
-          // Then check for keyword matches
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
               if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
-                console.log(`✅ Sub-option keyword match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
@@ -471,14 +465,11 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
         }
       }
       
-      // If in main menu (first level)
       if (lastOptionLevel === 'main' || !lastOptionLevel) {
-        // Check for EXACT matches FIRST
         for (let i = 0; i < topicData.options.length; i++) {
           const option = topicData.options[i];
           for (const trigger of option.trigger) {
             if (msg === trigger.toLowerCase()) {
-              console.log(`✅ Main option exact match: ${trigger} (index: ${i})`);
               if (option.subOptions) {
                 return {
                   answer: option.response,
@@ -504,12 +495,10 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
           }
         }
         
-        // Then check for keyword matches
         for (let i = 0; i < topicData.options.length; i++) {
           const option = topicData.options[i];
           for (const trigger of option.trigger) {
             if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
-              console.log(`✅ Main option keyword match: ${trigger} (index: ${i})`);
               if (option.subOptions) {
                 return {
                   answer: option.response,
@@ -538,7 +527,6 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
     }
   }
   
-  // PRIORITY 2: Search in global knowledge base
   let bestMatch = null;
   let highestScore = 0;
   
@@ -581,7 +569,6 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
   }
   
   if (bestMatch && bestMatch.score >= 10) {
-    console.log(`✅ Best Match: ${bestMatch.topic} (Score: ${bestMatch.score})`);
     return bestMatch;
   }
   
@@ -644,9 +631,15 @@ async function sendAdminEmail(userDetails) {
 }
 
 // ==============================================
-// OPENAI API CALL
+// OPENAI API CALL - WITH GRACEFUL FALLBACK
 // ==============================================
 async function callOpenAI(prompt) {
+  // If no API key, skip OpenAI entirely
+  if (!OPENAI_API_KEY || OPENAI_API_KEY === '') {
+    console.log('⚠️ OpenAI API key not configured - using fallback');
+    throw new Error('No API key configured');
+  }
+
   try {
     const url = 'https://api.openai.com/v1/chat/completions';
     
@@ -675,6 +668,13 @@ async function callOpenAI(prompt) {
 
     if (!response.ok) {
       const error = await response.json();
+      
+      // Check for quota exceeded error
+      if (error.error?.code === 'insufficient_quota' || error.error?.type === 'insufficient_quota') {
+        console.log('⚠️ OpenAI quota exceeded - using fallback');
+        throw new Error('Quota exceeded');
+      }
+      
       throw new Error(error.error?.message || 'OpenAI API failed');
     }
 
@@ -701,8 +701,9 @@ app.get('/', (req, res) => {
   res.json({
     status: '✅ Server Running',
     message: 'Vantage Hall Chatbot API - FAQ + EMOTIONAL QUOTIENT',
-    model: 'OpenAI GPT-4o-mini + Email Notifications',
+    model: 'Knowledge Base (45 topics) + OpenAI GPT-4o-mini (fallback)',
     knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
+    openaiConfigured: !!OPENAI_API_KEY,
     endpoints: {
       health: '/api/health',
       chat: '/api/chat (POST)',
@@ -713,7 +714,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    openaiConfigured: !!OPENAI_API_KEY
+  });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -763,6 +768,16 @@ app.post('/api/register', async (req, res) => {
 
 app.get('/api/test', async (req, res) => {
   try {
+    if (!OPENAI_API_KEY) {
+      return res.json({ 
+        success: true, 
+        message: '✅ Server is working!',
+        openaiStatus: 'Not configured (using Knowledge Base only)',
+        knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
+        mode: 'Knowledge Base Mode'
+      });
+    }
+
     const reply = await callOpenAI('Say "Hello! The OpenAI API is working!" in one sentence.');
     res.json({ 
       success: true, 
@@ -772,9 +787,10 @@ app.get('/api/test', async (req, res) => {
     });
   } catch (error) {
     res.json({ 
-      success: false, 
-      error: error.message,
-      fallbackMode: 'Enabled - Using comprehensive knowledge base',
+      success: true, 
+      message: '✅ Server is working!',
+      openaiStatus: 'Unavailable (' + error.message + ')',
+      fallbackMode: 'Using comprehensive Knowledge Base',
       knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length
     });
   }
@@ -802,8 +818,8 @@ app.post('/api/chat', async (req, res) => {
     ];
 
     const GENERAL_FALLBACK = [
-      "Thank you for your question! 😊\n\nFor detailed information:\n📞 Call: 0135-2776225\n📧 Email: info@vantagehall.org\n📱 Admissions: +91-8191912999",
-      "I'd be happy to help! For specific details:\n📞 0135-2776225\n📧 info@vantagehall.org"
+      "I can help you with information about Vantage Hall! 😊\n\nTry asking about:\n📝 Admissions\n💰 Fee Structure\n🏡 Hostel Facilities\n⚽ Sports & Activities\n💚 Emotional Support\n❓ FAQ\n\nOr contact us:\n📞 0135-2776225\n📱 +91-8191912999",
+      "I'd be happy to help! 😊\n\nYou can ask me about:\n• Admissions Process\n• Fee Structure\n• Hostel & Food\n• Sports & Clubs\n• Safety & Security\n• Emotional Support\n\nFor specific queries:\n📞 0135-2776225\n📧 info@vantagehall.org"
     ];
 
     if (/^(hi|hello|hey|good morning|good afternoon|good evening)/i.test(message.trim())) {
@@ -843,8 +859,10 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    try {
-      const systemContext = `
+    // Try OpenAI only if API key is configured
+    if (OPENAI_API_KEY) {
+      try {
+        const systemContext = `
 School Information:
 Location: Doonga, Dehradun - 248007
 Phone: 0135-2776225
@@ -853,30 +871,35 @@ Admissions: +91-8191912999, +91-7078311863
 
 User question: ${message}`;
 
-      const reply = await callOpenAI(systemContext);
-      
-      return res.json({ 
-        success: true, 
-        reply: reply.trim() + "\n\n🤖 *Powered by AI*",
-        mode: 'ai-powered'
-      });
-      
-    } catch (openaiError) {
-      const fallback = GENERAL_FALLBACK[Math.floor(Math.random() * GENERAL_FALLBACK.length)];
-      
-      return res.json({ 
-        success: true, 
-        reply: fallback,
-        mode: 'general-fallback'
-      });
+        const reply = await callOpenAI(systemContext);
+        
+        return res.json({ 
+          success: true, 
+          reply: reply.trim() + "\n\n🤖 *AI-Powered Response*",
+          mode: 'ai-powered'
+        });
+        
+      } catch (openaiError) {
+        console.log('⚠️ OpenAI unavailable, using fallback');
+        // Fall through to general fallback
+      }
     }
+
+    // General fallback when OpenAI is not available or configured
+    const fallback = GENERAL_FALLBACK[Math.floor(Math.random() * GENERAL_FALLBACK.length)];
+    
+    return res.json({ 
+      success: true, 
+      reply: fallback,
+      mode: 'general-fallback'
+    });
 
   } catch (error) {
     console.error('❌ Error:', error.message);
     
     res.json({
       success: true,
-      reply: `Thank you for your message! 😊\n\nFor immediate assistance:\n📞 Call: 0135-2776225\n📧 Email: info@vantagehall.org`,
+      reply: `I can help you with Vantage Hall information! 😊\n\nFor detailed assistance:\n📞 Call: 0135-2776225\n📧 Email: info@vantagehall.org\n📱 Admissions: +91-8191912999`,
       mode: 'emergency-fallback'
     });
   }
@@ -891,12 +914,19 @@ app.listen(PORT, () => {
   console.log('╚═══════════════════════════════════════════╝');
   console.log(`🌐 Server: http://localhost:${PORT}`);
   console.log(`🧪 Test API: http://localhost:${PORT}/api/test`);
-  console.log(`🤖 AI Model: OpenAI GPT-4o-mini`);
-  console.log(`📚 Knowledge Base: ${Object.keys(KNOWLEDGE_BASE).length} topics`);
+  console.log(`🤖 AI Model: ${OPENAI_API_KEY ? 'OpenAI GPT-4o-mini ✅' : 'Not Configured ⚠️'}`);
+  console.log(`📚 Knowledge Base: ${Object.keys(KNOWLEDGE_BASE).length} topics ✅`);
   console.log(`📧 Email: ${EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not Configured ❌'}`);
   console.log(`✅ FAQ Navigation: Working`);
   console.log(`💚 Emotional Quotient: Added`);
   console.log(`⬅️ Back to Menu: Enabled`);
+  console.log(`🔧 Fallback Mode: ${OPENAI_API_KEY ? 'OpenAI Primary' : 'Knowledge Base Only'}`);
   console.log('╚═══════════════════════════════════════════\n');
-  console.log('🚀 Ready to chat! Open index.html in your browser.\n');
+  console.log('🚀 Ready to chat!\n');
+  
+  if (!OPENAI_API_KEY) {
+    console.log('⚠️  NOTE: OpenAI API key not configured.');
+    console.log('   Chatbot will work using Knowledge Base only.');
+    console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
+  }
 });
