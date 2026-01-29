@@ -1,4 +1,4 @@
-// server.js - FIXED VERSION WITH PROPER FAQ NAVIGATION
+// server.js - UPDATED VERSION WITH EMOTIONAL QUOTIENT
 
 const fetch = require('node-fetch');
 const express = require('express');
@@ -31,11 +31,11 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'your-admin@vantagehall.org';
 const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 
 // ==============================================
-// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ
+// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ + EMOTIONAL QUOTIENT
 // ==============================================
 const KNOWLEDGE_BASE = {
   // ==============================================
-  // FAQ MAIN MENU (NEW SECTION)
+  // FAQ MENU (IT & Gadgets)
   // ==============================================
   faq_menu: {
     keywords: ['faq', 'faqs', 'frequently asked', 'common questions', 'questions'],
@@ -165,104 +165,152 @@ const KNOWLEDGE_BASE = {
   },
 
   // ==============================================
-  // EMOTIONAL SUPPORT & WELLBEING
+  // EMOTIONAL QUOTIENT MENU (NEW SECTION)
   // ==============================================
-  
-  visiting_policy: {
-    keywords: ['visit', 'visiting', 'can i visit', 'parent visit', 'meet daughter', 'see my daughter', 'visiting hours', 'when can i visit', 'visiting time'],
-    answer: "👨‍👩‍👧 Parent Visits:\n\nYes! Parents are warmly welcomed to visit their daughters whenever they wish. We strongly believe in maintaining close family connections.\n\n✅ Visit anytime you're in town\n✅ Preferably after school hours (to avoid disrupting academics)\n✅ No appointment needed - just come see your daughter!\n\nWe encourage regular interaction between parents and students. Your presence matters! 💙"
+  emotional_menu: {
+    keywords: ['emotional', 'emotional support', 'emotional quotient', 'wellbeing', 'mental health', 'care'],
+    answer: "💚 Emotional Support & Wellbeing:\n\nChoose a topic:",
+    hasOptions: true,
+    isEmotionalMenu: true,
+    options: [
+      {
+        id: 1,
+        label: "1️⃣ Parent Visits & Communication",
+        trigger: ['1', 'visit', 'parent visit', 'communication'],
+        response: "👨‍👩‍👧 Parent Visits & Communication:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "🏫 Can I visit my daughter?",
+            trigger: ['1', 'can i visit', 'visiting', 'visit daughter'],
+            response: "👨‍👩‍👧 Parent Visits:\n\nYes! Parents are warmly welcomed to visit their daughters whenever they wish. We strongly believe in maintaining close family connections.\n\n✅ Visit anytime you're in town\n✅ Preferably after school hours\n✅ No appointment needed\n\nWe encourage regular interaction between parents and students. Your presence matters! 💙"
+          },
+          {
+            id: 2,
+            label: "📱 Can I speak to my daughter?",
+            trigger: ['2', 'speak to daughter', 'call daughter', 'phone call'],
+            response: "📱 Parent-Student Communication:\n\n📞 Regular Calls:\n• Every Sunday: 1 hour device access for video/phone calls\n\n🚨 Emergency Communication:\n• Pastoral team ensures immediate contact\n• Front desk available 24/7\n• Parents informed instantly in emergencies\n\nWe ensure you stay connected while maintaining a healthy campus life balance!"
+          }
+        ]
+      },
+      {
+        id: 2,
+        label: "2️⃣ Emotional Support System",
+        trigger: ['2', 'emotional support', 'homesick', 'sad', 'counseling'],
+        response: "💚 Emotional Support System:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "💙 What if daughter feels homesick?",
+            trigger: ['1', 'homesick', 'feeling sad', 'missing home'],
+            response: "💚 Emotional Support:\n\nYes, we provide comprehensive emotional care:\n\n👩‍⚕️ Professional counselor on campus\n🏠 Caring dorm mothers\n👩‍🏫 Supportive teachers\n📞 Weekly video calls with parents\n👭 Small, close-knit community\n🤝 Regular check-ins & bonding sessions\n\nEvery girl receives continuous support to feel at home!"
+          },
+          {
+            id: 2,
+            label: "👩‍🏫 How is staff trained?",
+            trigger: ['2', 'staff trained', 'teacher training', 'staff care'],
+            response: "👩‍🏫 Staff Training:\n\nAll staff receive specialized training in:\n\n📚 Pastoral care\n🧠 Child psychology\n💚 Emotional support techniques\n🤝 Mentoring skills\n\nOur staff act as mentors, ensuring every student feels:\n✅ Supported ✅ Valued ✅ Heard ✅ Cared for"
+          },
+          {
+            id: 3,
+            label: "🆕 How do new students settle?",
+            trigger: ['3', 'new student', 'settling in', 'transition'],
+            response: "🎒 Helping New Students:\n\nWe know boarding life transition can be emotional:\n\n🤝 Support System:\n✅ Buddy pairing\n✅ Personal mentor assigned\n✅ Caring dorm mother\n✅ Orientation sessions\n✅ Interactive activities\n\nEvery child feels at home, understood, and cared for from day one!"
+          }
+        ]
+      },
+      {
+        id: 3,
+        label: "3️⃣ Food & Daily Routine",
+        trigger: ['3', 'food', 'meal', 'routine', 'schedule'],
+        response: "🍽️ Food & Daily Routine:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "🍎 Meal Schedule",
+            trigger: ['1', 'hungry', 'meal schedule', 'food timing'],
+            response: "🍎 Meal Schedule:\n\nNo child ever goes hungry!\n\n☀️ 8:00 AM - Breakfast\n🍪 11:00 AM - Morning Snack\n🍽️ 1:00 PM - Lunch\n🥤 6:00 PM - Evening Snack\n🍲 9:00 PM - Dinner\n🥛 Before Bed - Glass of Milk\n\n✅ Students can keep healthy snacks in dorms\n✅ Staff ensures nutritious, satisfying meals"
+          },
+          {
+            id: 2,
+            label: "🍽️ Food Quality & Nutrition",
+            trigger: ['2', 'food quality', 'nutrition', 'what food'],
+            response: "🍽️ Food & Nutrition:\n\nMeals are:\n✅ Nutritious & diverse\n✅ Lovingly prepared\n✅ Curated by nutritionist\n✅ Mix of Indian & Continental\n\n👩‍🍳 Personal Care:\n• Pastoral team supervises mealtimes\n• Ensures no one skips meals\n• Makes sure each student eats properly"
+          },
+          {
+            id: 3,
+            label: "📅 Daily Routine",
+            trigger: ['3', 'daily routine', 'schedule', 'typical day'],
+            response: "📅 Daily Routine:\n\nBalanced routine includes:\n\n📚 Academics\n⚽ Sports & Physical Activities\n🎨 Co-curricular Activities\n📖 Self-Study Time\n😌 Relaxation Periods\n\n🌅 Evenings: Outdoor play\n🎯 Weekends: Hobbies & recreation\n\nPerfect balance of learning, activity, and rest!"
+          }
+        ]
+      },
+      {
+        id: 4,
+        label: "4️⃣ Safety & Security",
+        trigger: ['4', 'safety', 'secure', 'bullying', 'protection'],
+        response: "🛡️ Safety & Security:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "🛡️ Security Measures",
+            trigger: ['1', 'security', 'how safe', 'campus security'],
+            response: "🛡️ Safety Measures:\n\n📹 24x7 CCTV surveillance\n👮 Trained security personnel\n🚪 Restricted entry with ID\n🏠 Round-the-clock dorm supervision\n🚨 Regular safety drills\n\nYour daughter's safety is our top priority with multiple protection layers!"
+          },
+          {
+            id: 2,
+            label: "🚫 Bullying Policy",
+            trigger: ['2', 'bullying', 'bullied', 'unsafe', 'harassment'],
+            response: "🚫 Zero-Tolerance Bullying:\n\nSTRICT zero-tolerance policy:\n\n✅ Students encouraged to speak with:\n• Dorm mothers • Counselors • Teachers\n\n📮 Multiple reporting channels:\n• Suggestion boxes\n• Feedback mechanisms\n• Regular meetings with leadership\n\n⚡ All concerns addressed promptly, confidentially!"
+          },
+          {
+            id: 3,
+            label: "🚨 Emergency Protocols",
+            trigger: ['3', 'emergency', 'emergency protocol', 'crisis'],
+            response: "🚨 Emergency Protocols:\n\nWell-defined procedures:\n\n✅ Trained staff & pastoral team\n✅ Handled with:\n• Utmost care\n• Calm approach\n• Empathy\n\n📞 Parents informed immediately\n\nYour child's safety is our top priority!"
+          }
+        ]
+      },
+      {
+        id: 5,
+        label: "5️⃣ Medical & Special Needs",
+        trigger: ['5', 'medical', 'health', 'special needs', 'dietary'],
+        response: "🏥 Medical & Special Needs:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "🏥 Medical Facilities",
+            trigger: ['1', 'medical facility', 'doctor', 'infirmary'],
+            response: "🏥 Medical Facilities:\n\n✅ Fully equipped infirmary - 24/7\n👩‍⚕️ Qualified female doctor & nurses\n🚑 School ambulance available\n🏥 Tie-ups with hospitals:\n• Graphic Era\n• Synergy\n• Max Hospital\n\n📞 Parents informed immediately in any medical situation!"
+          },
+          {
+            id: 2,
+            label: "🍽️ Special Dietary Needs",
+            trigger: ['2', 'special dietary', 'allergies', 'food allergy'],
+            response: "🏥 Special Dietary Needs:\n\nEvery child's well-being is personally attended:\n\n✅ Parents share:\n• Medical conditions\n• Allergies\n• Dietary preferences\n\n🍽️ Customized Care:\n• Meals tailored individually\n• Care plans personalized\n• Same attention as home\n\nYour daughter receives exactly what she needs!"
+          }
+        ]
+      },
+      {
+        id: 6,
+        label: "6️⃣ Academic Balance",
+        trigger: ['6', 'balance', 'academics', 'extracurricular', 'holistic'],
+        response: "⚖️ Academic Balance:\n\nWhat would you like to know?",
+        subOptions: [
+          {
+            id: 1,
+            label: "⚖️ How is balance maintained?",
+            trigger: ['1', 'balance academics', 'study balance', 'how balance'],
+            response: "⚖️ Academic & Extracurricular Balance:\n\nEvery child is unique with her own strengths:\n\n📚 Structured timetable ensures:\n✅ Equal importance to academics, sports, arts & leadership\n✅ Flexibility for individual needs\n\n🏃‍♀️ Sports enthusiasts: Encouraged\n📖 Academic focused: Time & support\n\nNo compromise on fitness or creative growth! Balance that nurtures intellect and individuality."
+          }
+        ]
+      }
+    ]
   },
 
-  homesickness_emotional_support: {
-    keywords: ['homesick', 'homesickness', 'sad', 'emotional support', 'feeling sad', 'missing home', 'counselor', 'counselling', 'emotional care', 'mental health', 'feelings'],
-    answer: "💚 Emotional Support System:\n\nYes, we provide comprehensive emotional care:\n\n👩‍⚕️ Professional counselor on campus\n🏠 Caring dorm mothers\n👩‍🏫 Supportive teachers\n📞 Weekly video calls with parents (every Sunday)\n👭 Small, close-knit community\n🤝 Regular check-ins & bonding sessions\n\nEvery girl receives continuous emotional support to feel at home. Our nurturing environment ensures no student feels alone or unsupported."
-  },
-
-  hunger_between_meals: {
-    keywords: ['hungry', 'hunger', 'snack', 'between meals', 'food timing', 'meal schedule', 'feeling hungry', 'eat between', 'hungry at night'],
-    answer: "🍎 Meal Schedule & Snacks:\n\nNo child ever goes hungry! Our meal schedule:\n\n☀️ 8:00 AM - Breakfast\n🍪 11:00 AM - Morning Snack\n🍽️ 1:00 PM - Lunch\n🥤 6:00 PM - Evening Snack\n🍲 9:00 PM - Dinner\n🥛 Before Bed - Glass of Milk\n\n✅ Students can keep personal dry fruits or healthy snacks in dorms\n✅ Staff ensures every meal is nutritious and satisfying\n✅ No one goes hungry - ever!"
-  },
-
-  daily_routine: {
-    keywords: ['daily routine', 'schedule', 'timetable', 'day schedule', 'what does a day look like', 'typical day', 'daily schedule', 'routine'],
-    answer: "📅 Daily Routine:\n\nStudents follow a balanced routine:\n\n📚 Academics (structured class hours)\n⚽ Sports & Physical Activities\n🎨 Co-curricular Activities\n📖 Self-Study Time\n😌 Relaxation Periods\n\n🌅 Evenings: Outdoor play & recreation\n🎯 Weekends: Time for hobbies & recreation\n\nA perfect balance of learning, activity, and rest!"
-  },
-
-  safety_security_detailed: {
-    keywords: ['safe', 'secure', 'security system', 'campus security', '24x7 security', 'how safe', 'protection'],
-    answer: "🛡️ Safety & Security Measures:\n\n📹 24x7 CCTV surveillance across campus\n👮 Trained security personnel at all entry points\n🚪 Restricted entry with ID verification\n🏠 Round-the-clock dorm supervision\n🚨 Regular safety drills & emergency preparedness\n\nYour daughter's safety is our top priority. The campus is completely secure with multiple layers of protection."
-  },
-
-  bullying_policy: {
-    keywords: ['bully', 'bullying', 'bullied', 'unsafe', 'harassment', 'feel unsafe', 'teasing', 'ragging'],
-    answer: "🚫 Zero-Tolerance Bullying Policy:\n\nWe have a STRICT zero-tolerance policy against bullying in ANY form.\n\n✅ Students encouraged to speak openly with:\n   • Dorm mothers\n   • Counselors\n   • Teachers\n\n📮 Multiple reporting channels:\n   • Suggestion boxes\n   • Feedback mechanisms\n   • Regular meetings with leadership\n\n⚡ All concerns addressed:\n   • Promptly\n   • Confidentially\n   • With appropriate action\n\nEvery student feels safe, supported, and heard!"
-  },
-
-  parent_communication: {
-    keywords: ['speak to daughter', 'call daughter', 'talk to my daughter', 'phone call', 'video call', 'communication', 'contact daughter', 'emergency contact'],
-    answer: "📱 Parent-Student Communication:\n\n📞 Regular Calls:\n• Every Sunday: 1 hour device access for video/phone calls\n\n🚨 Emergency Communication:\n• Pastoral team ensures immediate contact\n• Front desk available 24/7\n• Parents informed instantly in emergencies\n\nWe ensure you stay connected with your daughter while maintaining a healthy balance with campus life."
-  },
-
-  medical_facilities: {
-    keywords: ['medical facility', 'doctor on campus', 'nurse', 'infirmary', 'sick', 'illness', 'health care', 'medical emergency', 'hospital'],
-    answer: "🏥 Medical Facilities:<br><br>✅ Fully equipped infirmary on campus with 24/7 medical assistance<br>👩‍⚕️ Qualified female doctor and trained nurses available<br>🚑 School ambulance for immediate evacuation<br>🏥 Tie-ups with nearby hospitals like Graphic Era, Synergy, and Max for emergencies<br>📞 Parents informed immediately in case of any medical situation<br><br>Your daughter's health and safety are always a top priority. For complete details, visit: <a href='https://vantagehall.org/medical-services/' target='_blank'>Medical Services</a>"
-  },
-
-  staff_training: {
-    keywords: ['staff trained', 'teacher training', 'pastoral care training', 'staff qualification', 'how staff trained', 'mentors', 'staff care'],
-    answer: "👩‍🏫 Staff Training & Pastoral Care:\n\nAll staff members receive specialized training in:\n\n📚 Pastoral care\n🧠 Child psychology\n💚 Emotional support techniques\n🤝 Mentoring skills\n\nOur staff act as mentors, ensuring every student feels:\n✅ Supported\n✅ Valued\n✅ Heard\n✅ Cared for\n\nYour daughter is in caring, professional hands!"
-  },
-
-  food_nutrition: {
-    keywords: ['food quality', 'nutrition', 'nutritious food', 'healthy food', 'what kind of food', 'meal quality', 'eating properly', 'meal supervision'],
-    answer: "🍽️ Food & Nutrition Care:\n\nMeals are:\n✅ Nutritious & diverse\n✅ Lovingly prepared\n✅ Curated by a professional nutritionist\n✅ Mix of Indian & Continental dishes\n\n👩‍🍳 Personal Care:\n• Motherly pastoral team supervises mealtimes\n• Ensures no one skips meals\n• Makes sure each student eats properly\n\nNutrition is more than just a menu - it's care and supervision that ensures every child eats well!"
-  },
-
-  academic_balance: {
-    keywords: ['balance academics', 'extracurricular balance', 'sports vs study', 'how balance', 'academics and sports', 'holistic development'],
-    answer: "⚖️ Academic & Extracurricular Balance:\n\nWe believe every child is unique with her own strengths and pace.\n\n📚 Structured timetable ensures:\n✅ Equal importance to academics, sports, arts & leadership\n✅ Flexibility for individual needs\n\n🏃‍♀️ Sports enthusiasts: Encouraged to pursue passions\n📖 Academic focused: Time & support for strong goals\n\nNo compromise on physical fitness or creative growth!\n\nIt's a balance that nurtures both intellect and individuality."
-  },
-
-  emergency_protocols: {
-    keywords: ['emergency procedure', 'emergency protocol', 'what if emergency', 'emergency handling', 'crisis management'],
-    answer: "🚨 Emergency Protocols:\n\nWell-defined safety and emergency procedures:\n\n✅ Trained staff & pastoral team\n✅ Every procedure handled with:\n   • Utmost care\n   • Calm approach\n   • Empathy\n\n📞 Parents informed immediately\n\nYour child's safety is your top priority - and it's ours too. We're prepared for every situation."
-  },
-
-  new_student_settling: {
-    keywords: ['new student', 'settling in', 'transition', 'adjustment', 'first day', 'orientation', 'buddy system', 'new admission'],
-    answer: "🎒 Helping New Students Settle:\n\nWe know transitioning to boarding life can be emotional.\n\n🤝 Support System:\n✅ Buddy pairing (every new student gets a buddy)\n✅ Personal mentor assigned\n✅ Caring dorm mother\n✅ Orientation sessions\n✅ Interactive activities\n✅ Community-building programs\n\n💚 Focus: Creating a warm, inclusive environment where every child feels:\n• At home\n• Understood\n• Cared for\n\nRight from day one!"
-  },
-
-  special_needs: {
-    keywords: ['special dietary', 'allergies', 'allergy', 'medical condition', 'special needs', 'dietary requirements', 'customized meal', 'food allergy', 'health condition'],
-    answer: "🏥 Special Dietary & Medical Needs:\n\nEvery child's well-being is personally attended to.\n\n✅ Parents share:\n   • Medical conditions\n   • Allergies\n   • Dietary preferences\n\n👩‍⚕️ With our:\n   • Infirmary team\n   • Kitchen team\n\n🍽️ Customized Care:\n• Meals tailored individually\n• Care plans personalized\n• Same attention as at home\n\nYour daughter receives exactly what she needs!"
-  },
-
-  // Medical & Healthcare
-  medical_team: {
-    keywords: ['doctor', 'nurse', 'medical staff', 'physician', 'gynaecologist', 'school doctor'],
-    answer: "👩‍⚕️ Medical Staff:\n\nOur school has a qualified in-house doctor (MBBS, DGO – Physician & Gynaecologist) supported by three trained nurses, ensuring round-the-clock healthcare for all students."
-  },
-  
-  hospital_tieups: {
-    keywords: ['hospital', 'emergency hospital', 'tie-up', 'synergy', 'max', 'graphic era'],
-    answer: "🏥 Hospital Tie-ups:\n\nFor emergencies requiring specialized care, we have tie-ups with:\n• Graphic Era Hospital (nearby)\n• Synergy Hospital\n• Max Hospital\n\nThis ensures immediate and expert medical attention when needed."
-  },
-
-  first_aid: {
-    keywords: ['first aid', 'injury', 'wound', 'fever', 'allergy', 'minor injury'],
-    answer: "🚑 First Aid Services:\n\nOur medical team provides prompt first aid, including:\n• Minor injury care\n• Wound dressing\n• Fever management\n• Allergic reaction support\n\nStudents receive immediate attention and comfort within the campus."
-  },
-
-  monthly_checkup: {
-    keywords: ['health checkup', 'monthly checkup', 'medical exam', 'routine health', 'vision test'],
-    answer: "🩺 Monthly Health Check-ups:\n\nRegular health assessments include:\n• Height & Weight tracking\n• Vision tests\n• Dental hygiene\n• General physical examination\n\nThis helps monitor every student's well-being throughout the year."
-  },
-
-  medical_availability: {
-    keywords: ['24x7', 'available', 'round the clock', 'night doctor', 'day doctor'],
-    answer: "⏱️ 24x7 Medical Availability:\n\nMedical assistance, including first and primary aid, is available at all hours — ensuring your child's safety day and night."
-  },
+  // ==============================================
+  // OTHER SCHOOL INFORMATION
+  // ==============================================
 
   founder: {
     keywords: ['founder', 'established', 'history', 'who started', 'foundation', 'when founded'],
@@ -371,17 +419,17 @@ const KNOWLEDGE_BASE = {
 };
 
 // ==============================================
-// SMART KEYWORD MATCHING - FIXED VERSION
+// SMART KEYWORD MATCHING - UPDATED
 // ==============================================
 function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, lastSelectedOption = null) {
   const msg = userMessage.toLowerCase().trim();
   
-  // PRIORITY 1: Handle nested FAQ navigation with proper context
+  // PRIORITY 1: Handle nested navigation (FAQ/Emotional) with proper context
   if (lastTopic && KNOWLEDGE_BASE[lastTopic]) {
     const topicData = KNOWLEDGE_BASE[lastTopic];
     
     if (topicData.hasOptions) {
-      // If we're in sub-menu (second level) - ye woh case hai jahan issue aa raha tha
+      // If in sub-menu (second level)
       if (lastOptionLevel === 'sub' && lastSelectedOption !== null && lastSelectedOption !== undefined) {
         const mainOption = topicData.options[lastSelectedOption];
         if (mainOption && mainOption.subOptions) {
@@ -389,30 +437,33 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
               if (msg === trigger.toLowerCase()) {
-                console.log(`✅ Sub-option exact match found: ${trigger}`);
+                console.log(`✅ Sub-option exact match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
                   hasOptions: false,
                   selectedOption: null,
-                  optionLevel: null
+                  optionLevel: null,
+                  isFAQMenu: topicData.isFAQMenu || false,
+                  isEmotionalMenu: topicData.isEmotionalMenu || false
                 };
               }
             }
           }
           
-          // Then check for keyword matches in sub-options
+          // Then check for keyword matches
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
-              // Only match if it's NOT just a number and message contains the trigger
               if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
-                console.log(`✅ Sub-option keyword match found: ${trigger}`);
+                console.log(`✅ Sub-option keyword match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
                   hasOptions: false,
                   selectedOption: null,
-                  optionLevel: null
+                  optionLevel: null,
+                  isFAQMenu: topicData.isFAQMenu || false,
+                  isEmotionalMenu: topicData.isEmotionalMenu || false
                 };
               }
             }
@@ -420,42 +471,14 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
         }
       }
       
-      // If we're in main menu (first level)
+      // If in main menu (first level)
       if (lastOptionLevel === 'main' || !lastOptionLevel) {
-        // Check for EXACT matches in main options FIRST
+        // Check for EXACT matches FIRST
         for (let i = 0; i < topicData.options.length; i++) {
           const option = topicData.options[i];
           for (const trigger of option.trigger) {
             if (msg === trigger.toLowerCase()) {
-              console.log(`✅ Main option exact match found: ${trigger} (index: ${i})`);
-              if (option.subOptions) {
-                return {
-                  answer: option.response,
-                  topic: lastTopic,
-                  hasOptions: true,
-                  options: option.subOptions,
-                  selectedOption: i,  // Ye important hai - track karna padega ki konsa option select kiya
-                  optionLevel: 'sub'
-                };
-              }
-              return {
-                answer: option.response,
-                topic: lastTopic,
-                hasOptions: false,
-                selectedOption: null,
-                optionLevel: null
-              };
-            }
-          }
-        }
-        
-        // Then check for keyword matches in main options
-        for (let i = 0; i < topicData.options.length; i++) {
-          const option = topicData.options[i];
-          for (const trigger of option.trigger) {
-            // Only match if it's NOT just a number and message contains the trigger
-            if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
-              console.log(`✅ Main option keyword match found: ${trigger} (index: ${i})`);
+              console.log(`✅ Main option exact match: ${trigger} (index: ${i})`);
               if (option.subOptions) {
                 return {
                   answer: option.response,
@@ -463,7 +486,9 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
                   hasOptions: true,
                   options: option.subOptions,
                   selectedOption: i,
-                  optionLevel: 'sub'
+                  optionLevel: 'sub',
+                  isFAQMenu: topicData.isFAQMenu || false,
+                  isEmotionalMenu: topicData.isEmotionalMenu || false
                 };
               }
               return {
@@ -471,7 +496,40 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
                 topic: lastTopic,
                 hasOptions: false,
                 selectedOption: null,
-                optionLevel: null
+                optionLevel: null,
+                isFAQMenu: topicData.isFAQMenu || false,
+                isEmotionalMenu: topicData.isEmotionalMenu || false
+              };
+            }
+          }
+        }
+        
+        // Then check for keyword matches
+        for (let i = 0; i < topicData.options.length; i++) {
+          const option = topicData.options[i];
+          for (const trigger of option.trigger) {
+            if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
+              console.log(`✅ Main option keyword match: ${trigger} (index: ${i})`);
+              if (option.subOptions) {
+                return {
+                  answer: option.response,
+                  topic: lastTopic,
+                  hasOptions: true,
+                  options: option.subOptions,
+                  selectedOption: i,
+                  optionLevel: 'sub',
+                  isFAQMenu: topicData.isFAQMenu || false,
+                  isEmotionalMenu: topicData.isEmotionalMenu || false
+                };
+              }
+              return {
+                answer: option.response,
+                topic: lastTopic,
+                hasOptions: false,
+                selectedOption: null,
+                optionLevel: null,
+                isFAQMenu: topicData.isFAQMenu || false,
+                isEmotionalMenu: topicData.isEmotionalMenu || false
               };
             }
           }
@@ -491,17 +549,14 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
     for (const keyword of data.keywords) {
       const keywordLower = keyword.toLowerCase();
       
-      // Exact match gets highest priority
       if (msg === keywordLower) {
         score += 100;
         matchedKeywords.push(keyword);
       }
-      // Word boundary match
       else if (new RegExp(`\\b${keywordLower}\\b`, 'i').test(msg)) {
         score += 50;
         matchedKeywords.push(keyword);
       }
-      // Partial match
       else if (msg.includes(keywordLower)) {
         score += 10;
         matchedKeywords.push(keyword);
@@ -518,6 +573,7 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
         hasOptions: data.hasOptions || false,
         options: data.options || null,
         isFAQMenu: data.isFAQMenu || false,
+        isEmotionalMenu: data.isEmotionalMenu || false,
         selectedOption: null,
         optionLevel: data.hasOptions ? 'main' : null
       };
@@ -644,7 +700,7 @@ async function callOpenAI(prompt) {
 app.get('/', (req, res) => {
   res.json({
     status: '✅ Server Running',
-    message: 'Vantage Hall Chatbot API - FIXED FAQ Navigation',
+    message: 'Vantage Hall Chatbot API - FAQ + EMOTIONAL QUOTIENT',
     model: 'OpenAI GPT-4o-mini + Email Notifications',
     knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
     endpoints: {
@@ -759,11 +815,10 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Yahan pe lastSelectedOption bhi pass kar rahe hain - IMPORTANT!
     const knowledgeMatch = findBestMatch(message, lastTopic, lastOptionLevel, lastSelectedOption);
     
     if (knowledgeMatch) {
-      console.log(`✅ Knowledge Base Match Found - Topic: ${knowledgeMatch.topic}`);
+      console.log(`✅ Knowledge Base Match - Topic: ${knowledgeMatch.topic}`);
       
       let reply = knowledgeMatch.answer;
       
@@ -782,8 +837,9 @@ app.post('/api/chat', async (req, res) => {
         options: knowledgeMatch.options || null,
         currentTopic: knowledgeMatch.topic,
         optionLevel: knowledgeMatch.optionLevel || null,
-        selectedOption: knowledgeMatch.selectedOption,  // Ye bhi return karna hai
-        isFAQMenu: knowledgeMatch.isFAQMenu || false
+        selectedOption: knowledgeMatch.selectedOption,
+        isFAQMenu: knowledgeMatch.isFAQMenu || false,
+        isEmotionalMenu: knowledgeMatch.isEmotionalMenu || false
       });
     }
 
@@ -838,16 +894,9 @@ app.listen(PORT, () => {
   console.log(`🤖 AI Model: OpenAI GPT-4o-mini`);
   console.log(`📚 Knowledge Base: ${Object.keys(KNOWLEDGE_BASE).length} topics`);
   console.log(`📧 Email: ${EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not Configured ❌'}`);
-  console.log(`🔧 FAQ Navigation: FIXED ✅`);
+  console.log(`✅ FAQ Navigation: Working`);
+  console.log(`💚 Emotional Quotient: Added`);
+  console.log(`⬅️ Back to Menu: Enabled`);
   console.log('╚═══════════════════════════════════════════\n');
   console.log('🚀 Ready to chat! Open index.html in your browser.\n');
 });
-
-
-
-
-
-
-
-
-//hello eevgwbfre//
