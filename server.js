@@ -395,7 +395,7 @@ const KNOWLEDGE_BASE = {
   },
 
   food: {
-    keywords: ['food', 'dining', 'menu', 'meal', 'lunch', 'dinner', 'breakfast', 'diet'],
+    keywords: ['food', 'dining', 'menu', 'meal', 'lunch', 'dinner', 'breakfast', 'veg','nonveg', 'non-veg', 'diet'],
     answer: "🍽️ Dining & Nutrition:\n\n✅ Nutritionist-planned meals\n✅ Special diets for athletes & medical needs\n✅ Veg & non-veg options\n✅ Menu rotates every 15 days\n\n🥗 Daily Meals:\n• Breakfast: Fruits, cereals, milk, eggs, bread/parathas\n• Lunch: Dal, rice/roti, vegetables, salad\n• Dinner: Similar to lunch with variety\n• Night Milk: Mandatory"
   },
 
@@ -932,4 +932,5 @@ app.listen(PORT, () => {
     console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
   }
 });
+
 
