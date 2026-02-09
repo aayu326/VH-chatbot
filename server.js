@@ -836,10 +836,8 @@ app.post('/api/chat', async (req, res) => {
     ];
 
     const GENERAL_FALLBACK = [
-  "For better assistance, we recommend connecting with us directly. 📞\n\nPlease feel free to contact our organization using the details below:\n\n📞 Phone: 0135-2776225\n📱 Mobile: +91-8191912999\n📧 Email: info@vantagehall.org\n\nOur team will be happy to assist you.",
-
+  "For better assistance, we recommend connecting with us directly. 📞\n\nPlease feel free to contact our organization using the details below:\n\n📞 Phone: <a href='tel:01352776225'>0135-2776225</a>\n📱 Mobile: <a href='tel:+918191912999'>+91-8191912999</a>\n📧 Email: <a href='mailto:info@vantagehall.org'>info@vantagehall.org</a>\n\nOur team will be happy to assist you."
 ];
-
 
     if (/^(hi|hello|hey|good morning|good afternoon|good evening)/i.test(message.trim())) {
       const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
@@ -949,6 +947,7 @@ app.listen(PORT, () => {
     console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
   }
 });
+
 
 
 
