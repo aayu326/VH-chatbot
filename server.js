@@ -384,6 +384,22 @@ const KNOWLEDGE_BASE = {
     answer: "📄 Required Documents:\n\n• Birth Certificate & Aadhaar Card\n• Parents' Aadhaar & PAN Cards\n• Last examination mark sheet\n• Original Transfer Certificate\n• Medical Fitness Certificate\n• Student's PEN Number / APAAR ID"
   },
 
+
+medical: {
+  keywords: [
+    'medical',
+    'medical facilities',
+    'health',
+    'doctor',
+    'hospital',
+    'infirmary',
+    'ambulance'
+  ],
+  answer: "🏥 <a href='https://vantagehall.org/medical-services-boarding-school-dehradun/' target='_blank'>Medical Facilities</a>:\n\n✅ Fully equipped infirmary – 24/7\n👩‍⚕️ Qualified female doctor & nurses\n🚑 School ambulance available\n🏥 Tie-ups with hospitals:\n• Graphic Era\n• Synergy\n• Max Hospital\n\n📞 Parents are informed immediately in any medical situation!"
+},
+
+  
+
   fee: {
     keywords: ['fee', 'fees', 'cost', 'tuition', 'charge', 'payment', 'price'],
     answer: "💰 Fee Structure:<br><br>📌 Classes 3-7: ₹7,35,000 (Annual: ₹5,50,000 + One-time: ₹1,85,000)<br><br>📌 Classes 8-10: ₹8,35,000 (Annual: ₹6,50,000 + One-time: ₹1,85,000)<br><br>📌 Classes 11-12: ₹8,85,000 (Annual: ₹7,00,000 + One-time: ₹1,85,000)<br><br>*One-time fees include registration, joining kit, imprest deposit & admission fee.<br><br>For full details, visit: <a href='https://vantagehall.org/fee-structure/' target='_blank'>Fee Structure</a>"
@@ -933,6 +949,7 @@ app.listen(PORT, () => {
     console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
   }
 });
+
 
 
 
