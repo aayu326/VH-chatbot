@@ -822,7 +822,6 @@ app.post('/api/chat', async (req, res) => {
     const GENERAL_FALLBACK = [
   "For better assistance, we recommend connecting with us directly. 📞\n\nPlease feel free to contact our organization using the details below:\n\n📞 Phone: 0135-2776225\n📱 Mobile: +91-8191912999\n📧 Email: info@vantagehall.org\n\nOur team will be happy to assist you.",
 
-  "We believe direct communication works best. 😊\n\nKindly reach out to our organization through the contact details mentioned below:\n\n📞 0135-2776225\n📱 +91-8191912999\n📧 info@vantagehall.org\n\nWe look forward to assisting you."
 ];
 
 
@@ -934,6 +933,7 @@ app.listen(PORT, () => {
     console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
   }
 });
+
 
 
 
