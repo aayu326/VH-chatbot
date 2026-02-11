@@ -847,8 +847,9 @@
         // ==============================================
         // CONFIGURATION
         // ==============================================
-        const API_URL = "https://vh-chatbot.vercel.app/api/chat";
-        const REGISTER_URL = "https://vh-chatbot.vercel.app/api/register";
+        const API_URL = "http://localhost:8000/api/chat";
+        const REGISTER_URL = "http://localhost:8000/api/register";
+        const CALLBACK_URL = "http://localhost:8000/api/callback-request"; // ✅ NEW
 
         // ==============================================
         // DOM ELEMENTS
@@ -872,7 +873,7 @@
         const userPhone = document.getElementById('userPhone');
 
         // ==============================================
-        // STATE MANAGEMENT - UPDATED
+        // STATE MANAGEMENT - UPDATED ✅ NEW
         // ==============================================
         let isProcessing = false;
         let isRegistered = false;
@@ -880,12 +881,66 @@
         let currentTopic = null;
         let currentOptionLevel = null;
         let currentSelectedOption = null;
-        let interactionCount = 0; // NEW: Track interactions in FAQ/Emotional sections
+        let interactionCount = 0;
+        let waitingForCallback = false; // ✅ NEW
+        let pendingQuery = ''; // ✅ NEW
 
         // Check if user is already registered
         if (localStorage.getItem('vhUserRegistered')) {
             isRegistered = true;
             userData = JSON.parse(localStorage.getItem('vhUserData'));
+        }
+
+        // ==============================================
+        // ✅ NEW: CALLBACK PHONE VALIDATION
+        // ==============================================
+        function validateCallbackPhone(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            return cleaned.length === 10 && /^[6-9]\d{9}$/.test(cleaned);
+        }
+
+        // ==============================================
+        // ✅ NEW: HANDLE CALLBACK REQUEST
+        // ==============================================
+        async function handleCallbackRequest(callbackNumber) {
+            try {
+                const response = await fetch(CALLBACK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: userData.name,
+                        email: userData.email,
+                        phone: userData.phone,
+                        query: pendingQuery,
+                        callback_number: callbackNumber
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(
+                        `Thank you! ✅ Your callback request has been received.\n\n📞 We'll call you at: ${callbackNumber}\n\nOur team will reach out to you within 24 hours.\n\nIs there anything else I can help you with?`,
+                        'bot'
+                    );
+                    waitingForCallback = false;
+                    pendingQuery = '';
+                    showDefaultQuickReplies();
+                } else {
+                    addMessage(
+                        'Sorry, there was an issue. Please contact us directly:\n📞 0135-2776225\n📱 +91-8191912999',
+                        'bot'
+                    );
+                }
+            } catch (error) {
+                console.error('Callback request error:', error);
+                addMessage(
+                    'Connection error. Please contact us directly:\n📞 0135-2776225\n📱 +91-8191912999',
+                    'bot'
+                );
+            }
         }
 
         // ==============================================
@@ -900,6 +955,8 @@
             currentOptionLevel = null;
             currentSelectedOption = null;
             interactionCount = 0;
+            waitingForCallback = false; // ✅ NEW
+            pendingQuery = ''; // ✅ NEW
             
             hideBackButton();
             showDefaultQuickReplies();
@@ -926,7 +983,6 @@
                 <button class="quick-reply-btn" data-reply="How can I contact you?">📞 Contact</button>
             `;
             
-            // Re-attach event listener for new back button
             const newBackBtn = document.getElementById('backToMenuBtn');
             newBackBtn.addEventListener('click', resetToMainMenu);
         }
@@ -1057,11 +1113,42 @@
         });
 
         // ==============================================
-        // SEND MESSAGE FUNCTION - UPDATED
+        // SEND MESSAGE FUNCTION - UPDATED ✅ NEW
         // ==============================================
         async function sendMessage() {
             const message = userInput.value.trim();
             if (message === '' || isProcessing) return;
+
+            // ✅ NEW: Check if waiting for callback number
+            if (waitingForCallback) {
+                if (validateCallbackPhone(message)) {
+                    addMessage(message, 'user');
+                    userInput.value = '';
+                    
+                    isProcessing = true;
+                    typingIndicator.style.display = 'block';
+                    userInput.disabled = true;
+                    sendBtn.disabled = true;
+                    scrollToBottom();
+                    
+                    await handleCallbackRequest(message);
+                    
+                    isProcessing = false;
+                    typingIndicator.style.display = 'none';
+                    userInput.disabled = false;
+                    sendBtn.disabled = false;
+                    userInput.focus();
+                    return;
+                } else {
+                    addMessage(message, 'user');
+                    addMessage(
+                        '❌ Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.\n\nExample: 9876543210',
+                        'bot'
+                    );
+                    userInput.value = '';
+                    return;
+                }
+            }
 
             addMessage(message, 'user');
             userInput.value = '';
@@ -1097,18 +1184,26 @@
                 if (data.success && data.reply) {
                     addMessage(data.reply, 'bot');
                     
-                    // UPDATED: Handle context and interaction count
-                    if (data.hasOptions) {
+                    // ✅ NEW: Check if callback is required
+                    if (data.requiresCallback) {
+                        waitingForCallback = true;
+                        pendingQuery = data.userQuery || message;
+                        quickReplies.innerHTML = '<button class="back-to-menu-btn show" id="backToMenuBtn">⬅️ Cancel</button>';
+                        document.getElementById('backToMenuBtn').addEventListener('click', () => {
+                            waitingForCallback = false;
+                            pendingQuery = '';
+                            resetToMainMenu();
+                        });
+                    }
+                    else if (data.hasOptions) {
                         currentTopic = data.currentTopic;
                         currentOptionLevel = data.optionLevel;
                         currentSelectedOption = data.selectedOption !== undefined ? data.selectedOption : null;
                         
-                        // Increment interaction count for FAQ/Emotional sections
                         if (data.isFAQMenu || data.isEmotionalMenu) {
                             interactionCount++;
                         }
                         
-                        // Show back button after any interaction in special menus
                         if (data.isFAQMenu || data.isEmotionalMenu || interactionCount > 0) {
                             showBackButton();
                         }
@@ -1124,8 +1219,6 @@
                             showOptionButtons(data.options);
                         }
                     } else {
-                        // Don't auto-reset - user must manually go back
-                        // Just hide option buttons
                         if (!currentTopic) {
                             hideBackButton();
                             showDefaultQuickReplies();
@@ -1158,7 +1251,6 @@
         // SHOW OPTION BUTTONS
         // ==============================================
         function showOptionButtons(options) {
-            // Keep back button, remove old options, add new ones
             const backBtn = backToMenuBtn.cloneNode(true);
             backBtn.addEventListener('click', resetToMainMenu);
             
@@ -1257,12 +1349,9 @@
             }
         }, 1000);
 
-        console.log('🎓 Vantage Hall Chatbot - UPDATED VERSION');
-        console.log('✅ FAQ + Emotional Support with Back to Menu');
-        console.log('📌 No auto-redirect from special menus');
+        console.log('🎓 Vantage Hall Chatbot - WITH EMAIL CALLBACK ✅');
+        console.log('📧 Unknown queries trigger callback collection');
     </script>
 
 </body>
 </html>
-
-
