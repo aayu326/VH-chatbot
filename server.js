@@ -192,7 +192,21 @@ const KNOWLEDGE_BASE = {
       {
         id: 1,
         label: "1️⃣ Parent Visits & Communication",
-        trigger: ['1', 'visit', 'parent visit', 'communication'],
+      trigger: [
+    '1',
+    'visit',
+    'parent visit',
+    'communication',
+    'visiting hours',
+    'parent visit anytime',
+    'meet my daughter',
+    'boarding visitation',
+    'weekend visit',
+    'visit policy',
+    'parent meeting schedule',
+    'visit in dehradun'
+]
+
         response: "👨‍👩‍👧 Parent Visits & Communication:\n\nWhat would you like to know?",
         subOptions: [
           {
@@ -1169,3 +1183,4 @@ app.listen(PORT, () => {
     console.log('   Callback emails will not be sent until configured.\n');
   }
 });
+
