@@ -1,9 +1,12 @@
-// server.js - developed by aayush 
+// server.js - UPDATED WITH EMAIL CALLBACK FEATURE ✅
+console.log("🔥 THIS SERVER.JS IS RUNNING 🔥");
+
 
 const fetch = require('node-fetch');
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
@@ -14,26 +17,37 @@ app.use(cors());
 app.use(express.json());
 
 // ==============================================
-// my api(for vantage)
+// API KEYS - UPDATED FOR GEMINI
+// ==============================================
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// Initialize Gemini
+let genAI = null;
+if (GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  console.log('✅ Gemini API initialized');
+} else {
+  console.log('⚠️ Gemini API key not found - using Knowledge Base only');
+}
 
 // ==============================================
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-// Email Configuration
+// ✅ NEW: EMAIL CONFIGURATION FOR CALLBACK
+// ==============================================
 const EMAIL_CONFIG = {
   service: 'gmail',
   auth: {
-    user: process.env.ADMIN_EMAIL,
-    pass: process.env.EMAIL_PASSWORD
+    user: process.env.ADMIN_EMAIL || 'bhk295826@gmail.com',
+    pass: process.env.EMAIL_PASSWORD || 'hcis fdlh lbta gotv'
   }
 };
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'your-admin@vantagehall.org';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@vantagehall.org';
 const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 
-// ==============================================
-// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ + EMOTIONAL QUOTIENT(updated by sahil sir)
 
+
+// ==============================================
+// COMPREHENSIVE KNOWLEDGE BASE WITH FAQ + EMOTIONAL QUOTIENT
 // ==============================================
 const KNOWLEDGE_BASE = {
   // ==============================================
@@ -167,7 +181,7 @@ const KNOWLEDGE_BASE = {
   },
 
   // ==============================================
-  // EMOTIONAL QUOTIENT MENU
+  // EMOTIONAL QUOTIENT MENU (NEW SECTION)
   // ==============================================
   emotional_menu: {
     keywords: ['emotional', 'emotional support', 'emotional quotient', 'wellbeing', 'mental health', 'care'],
@@ -282,7 +296,7 @@ const KNOWLEDGE_BASE = {
           {
             id: 1,
             label: "🏥 Medical Facilities",
-            trigger: ['1', 'medical facility', 'doctor', 'infirmary'],
+            trigger: ['1', 'medical facility', 'doctor', 'infirmary' ,'is medical facility available in school', ],
             response: "🏥 Medical Facilities:\n\n✅ Fully equipped infirmary - 24/7\n👩‍⚕️ Qualified female doctor & nurses\n🚑 School ambulance available\n🏥 Tie-ups with hospitals:\n• Graphic Era\n• Synergy\n• Max Hospital\n\n📞 Parents informed immediately in any medical situation!"
           },
           {
@@ -349,6 +363,20 @@ const KNOWLEDGE_BASE = {
     answer: "🏫 Campus Facilities:\n• 12-acre lush green campus\n• Modern academic blocks & labs\n• Fully stocked library\n• Amphitheatre & multi-purpose auditorium\n• Indoor & outdoor sports arenas"
   },
 
+
+  medical: {
+  keywords: [
+    'medical',
+    'medical facilities',
+    'health',
+    'doctor',
+    'hospital',
+    'infirmary',
+    'ambulance'
+  ],
+  answer: "🏥 <a href='https://vantagehall.org/medical-services-boarding-school-dehradun/' target='_blank'>Medical Facilities</a>:\n\n✅ Fully equipped infirmary – 24/7\n👩‍⚕️ Qualified female doctor & nurses\n🚑 School ambulance available\n🏥 Tie-ups with hospitals:\n• Graphic Era\n• Synergy\n• Max Hospital\n\n📞 Parents are informed immediately in any medical situation!"
+},
+
   vision: {
     keywords: ['vision', 'goal', 'objective', 'purpose', 'mission'],
     answer: "🎯 Our Vision & Mission:\n\nTo nurture happy, independent, and unique individuals in a safe and supportive environment."
@@ -384,22 +412,6 @@ const KNOWLEDGE_BASE = {
     answer: "📄 Required Documents:\n\n• Birth Certificate & Aadhaar Card\n• Parents' Aadhaar & PAN Cards\n• Last examination mark sheet\n• Original Transfer Certificate\n• Medical Fitness Certificate\n• Student's PEN Number / APAAR ID"
   },
 
-
-medical: {
-  keywords: [
-    'medical',
-    'medical facilities',
-    'health',
-    'doctor',
-    'hospital',
-    'infirmary',
-    'ambulance'
-  ],
-  answer: "🏥 <a href='https://vantagehall.org/medical-services-boarding-school-dehradun/' target='_blank'>Medical Facilities</a>:\n\n✅ Fully equipped infirmary – 24/7\n👩‍⚕️ Qualified female doctor & nurses\n🚑 School ambulance available\n🏥 Tie-ups with hospitals:\n• Graphic Era\n• Synergy\n• Max Hospital\n\n📞 Parents are informed immediately in any medical situation!"
-},
-
-  
-
   fee: {
     keywords: ['fee', 'fees', 'cost', 'tuition', 'charge', 'payment', 'price'],
     answer: "💰 Fee Structure:<br><br>📌 Classes 3-7: ₹7,35,000 (Annual: ₹5,50,000 + One-time: ₹1,85,000)<br><br>📌 Classes 8-10: ₹8,35,000 (Annual: ₹6,50,000 + One-time: ₹1,85,000)<br><br>📌 Classes 11-12: ₹8,85,000 (Annual: ₹7,00,000 + One-time: ₹1,85,000)<br><br>*One-time fees include registration, joining kit, imprest deposit & admission fee.<br><br>For full details, visit: <a href='https://vantagehall.org/fee-structure/' target='_blank'>Fee Structure</a>"
@@ -411,7 +423,7 @@ medical: {
   },
 
   food: {
-    keywords: ['food', 'dining', 'menu', 'meal', 'lunch', 'dinner', 'breakfast', 'veg','nonveg', 'non-veg', 'diet'],
+    keywords: ['food', 'dining', 'menu', 'meal', 'lunch', 'dinner', 'breakfast', 'diet'],
     answer: "🍽️ Dining & Nutrition:\n\n✅ Nutritionist-planned meals\n✅ Special diets for athletes & medical needs\n✅ Veg & non-veg options\n✅ Menu rotates every 15 days\n\n🥗 Daily Meals:\n• Breakfast: Fruits, cereals, milk, eggs, bread/parathas\n• Lunch: Dal, rice/roti, vegetables, salad\n• Dinner: Similar to lunch with variety\n• Night Milk: Mandatory"
   },
 
@@ -437,21 +449,181 @@ medical: {
 };
 
 // ==============================================
-// SMART KEYWORD MATCHING
+// ✅ NEW: EMAIL SENDING FUNCTION
+// ==============================================
+async function sendCallbackEmail(userDetails, query, callbackNumber) {
+  try {
+    const mailOptions = {
+      from: EMAIL_CONFIG.auth.user,
+      to: ADMIN_EMAIL,
+      subject: '🔔 Callback Request - Vantage Hall Chatbot',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 30px auto;
+              background-color: white;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #1a3a52 0%, #0d2436 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .content {
+              padding: 30px;
+            }
+            .info-row {
+              margin: 15px 0;
+              padding: 15px;
+              background-color: #f9f9f9;
+              border-left: 4px solid #1a3a52;
+              border-radius: 4px;
+            }
+            .label {
+              font-weight: bold;
+              color: #1a3a52;
+              font-size: 14px;
+              margin-bottom: 5px;
+            }
+            .value {
+              color: #333;
+              font-size: 16px;
+            }
+            .callback-number {
+              background-color: #d4536c;
+              color: white;
+              padding: 20px;
+              border-radius: 8px;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .callback-number .number {
+              font-size: 28px;
+              font-weight: bold;
+              letter-spacing: 2px;
+            }
+            .query-box {
+              background-color: #fff3cd;
+              border: 1px solid #ffc107;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              padding: 20px;
+              background-color: #f9f9f9;
+              color: #666;
+              font-size: 12px;
+            }
+            .timestamp {
+              color: #999;
+              font-size: 12px;
+              margin-top: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📞 New Callback Request</h1>
+              <p>From Vantage Hall Chatbot</p>
+            </div>
+            
+            <div class="content">
+              <div class="callback-number">
+                <div class="label">CALLBACK NUMBER</div>
+                <div class="number">📱 ${callbackNumber}</div>
+              </div>
+              
+              <div class="info-row">
+                <div class="label">👤 User Name</div>
+                <div class="value">${userDetails.name}</div>
+              </div>
+              
+              <div class="info-row">
+                <div class="label">📧 Email Address</div>
+                <div class="value">${userDetails.email}</div>
+              </div>
+              
+              <div class="info-row">
+                <div class="label">📱 Registered Phone</div>
+                <div class="value">${userDetails.phone}</div>
+              </div>
+              
+              <div class="query-box">
+                <div class="label">❓ User's Query</div>
+                <div class="value" style="margin-top: 10px;">${query}</div>
+              </div>
+              
+              <div class="timestamp">
+                ⏰ Received: ${new Date().toLocaleString('en-IN', { 
+                  timeZone: 'Asia/Kolkata',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>This is an automated message from Vantage Hall Chatbot System</p>
+              <p>Please call back at your earliest convenience</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Callback email sent successfully!');
+    return true;
+  } catch (error) {
+    console.error('❌ Email sending failed:', error.message);
+    return false;
+  }
+}
+
+// ==============================================
+// SMART KEYWORD MATCHING - UPDATED
 // ==============================================
 function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, lastSelectedOption = null) {
   const msg = userMessage.toLowerCase().trim();
   
+  // PRIORITY 1: Handle nested navigation (FAQ/Emotional) with proper context
   if (lastTopic && KNOWLEDGE_BASE[lastTopic]) {
     const topicData = KNOWLEDGE_BASE[lastTopic];
     
     if (topicData.hasOptions) {
+      // If in sub-menu (second level)
       if (lastOptionLevel === 'sub' && lastSelectedOption !== null && lastSelectedOption !== undefined) {
         const mainOption = topicData.options[lastSelectedOption];
         if (mainOption && mainOption.subOptions) {
+          // Check for EXACT matches in sub-options FIRST
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
               if (msg === trigger.toLowerCase()) {
+                console.log(`✅ Sub-option exact match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
@@ -465,9 +637,11 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
             }
           }
           
+          // Then check for keyword matches
           for (const subOption of mainOption.subOptions) {
             for (const trigger of subOption.trigger) {
               if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
+                console.log(`✅ Sub-option keyword match: ${trigger}`);
                 return {
                   answer: subOption.response,
                   topic: lastTopic,
@@ -483,11 +657,14 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
         }
       }
       
+      // If in main menu (first level)
       if (lastOptionLevel === 'main' || !lastOptionLevel) {
+        // Check for EXACT matches FIRST
         for (let i = 0; i < topicData.options.length; i++) {
           const option = topicData.options[i];
           for (const trigger of option.trigger) {
             if (msg === trigger.toLowerCase()) {
+              console.log(`✅ Main option exact match: ${trigger} (index: ${i})`);
               if (option.subOptions) {
                 return {
                   answer: option.response,
@@ -513,10 +690,12 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
           }
         }
         
+        // Then check for keyword matches
         for (let i = 0; i < topicData.options.length; i++) {
           const option = topicData.options[i];
           for (const trigger of option.trigger) {
             if (trigger.toLowerCase().length > 1 && msg.includes(trigger.toLowerCase())) {
+              console.log(`✅ Main option keyword match: ${trigger} (index: ${i})`);
               if (option.subOptions) {
                 return {
                   answer: option.response,
@@ -545,6 +724,7 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
     }
   }
   
+  // PRIORITY 2: Search in global knowledge base
   let bestMatch = null;
   let highestScore = 0;
   
@@ -587,6 +767,7 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
   }
   
   if (bestMatch && bestMatch.score >= 10) {
+    console.log(`✅ Best Match: ${bestMatch.topic} (Score: ${bestMatch.score})`);
     return bestMatch;
   }
   
@@ -594,7 +775,7 @@ function findBestMatch(userMessage, lastTopic = null, lastOptionLevel = null, la
 }
 
 // ==============================================
-// EMAIL NOTIFICATION(satyeshwork326@gmail.com)
+// EMAIL NOTIFICATION FOR REGISTRATION
 // ==============================================
 async function sendAdminEmail(userDetails) {
   try {
@@ -649,65 +830,46 @@ async function sendAdminEmail(userDetails) {
 }
 
 // ==============================================
-// OPENAI API CALL - WITH GRACEFUL FALLBACK
+// GOOGLE GEMINI API CALL - UPDATED
 // ==============================================
-async function callOpenAI(prompt) {
-  // If no API key, skip OpenAI entirely
-  if (!OPENAI_API_KEY || OPENAI_API_KEY === '') {
-    console.log('⚠️ OpenAI API key not configured - using fallback');
-    throw new Error('No API key configured');
+async function callGemini(prompt) {
+  if (!genAI) {
+    throw new Error('Gemini API not initialized - API key missing');
   }
 
   try {
-    const url = 'https://api.openai.com/v1/chat/completions';
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a friendly assistant for Vantage Hall Girls\' Residential School, Dehradun. Answer ONLY questions about Vantage Hall school. For unrelated questions, politely redirect to school-related topics.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      })
-    });
+    const systemContext = `You are a friendly assistant for Vantage Hall Girls' Residential School, Dehradun. 
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Check for quota exceeded error
-      if (error.error?.code === 'insufficient_quota' || error.error?.type === 'insufficient_quota') {
-        console.log('⚠️ OpenAI quota exceeded - using fallback');
-        throw new Error('Quota exceeded');
-      }
-      
-      throw new Error(error.error?.message || 'OpenAI API failed');
-    }
+School Information:
+- Location: Doonga, Dehradun - 248007
+- Phone: 0135-2776225
+- Email: info@vantagehall.org
+- Admissions: +91-8191912999, +91-7078311863
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+Guidelines:
+- Answer ONLY questions about Vantage Hall school
+- Keep responses friendly, warm, and concise
+- For unrelated questions, politely redirect to school-related topics
+- Use emojis appropriately to keep responses engaging
+- If you don't know specific details, suggest contacting the school
+
+User question: ${prompt}`;
+
+    const result = await model.generateContent(systemContext);
+    const response = await result.response;
+    const text = response.text();
     
     if (!text) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from Gemini');
     }
 
-    console.log('✅ OpenAI API responded successfully');
+    console.log('✅ Gemini API responded successfully');
     return text;
 
   } catch (error) {
-    console.error('❌ OpenAI Error:', error.message);
+    console.error('❌ Gemini Error:', error.message);
     throw error;
   }
 }
@@ -718,14 +880,16 @@ async function callOpenAI(prompt) {
 app.get('/', (req, res) => {
   res.json({
     status: '✅ Server Running',
-    message: 'Vantage Hall Chatbot API - FAQ + EMOTIONAL QUOTIENT',
-    model: 'Knowledge Base (45 topics) + OpenAI GPT-4o-mini (fallback)',
+    message: 'Vantage Hall Chatbot API - WITH EMAIL CALLBACK ✅',
+    model: 'Google Gemini Pro (FREE) + Email Notifications',
     knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
-    openaiConfigured: !!OPENAI_API_KEY,
+    geminiConfigured: !!GEMINI_API_KEY,
+    emailConfigured: !!EMAIL_CONFIG.auth.user,
     endpoints: {
       health: '/api/health',
       chat: '/api/chat (POST)',
       register: '/api/register (POST)',
+      callback: '/api/callback-request (POST)', // ✅ NEW
       test: '/api/test'
     }
   });
@@ -735,7 +899,8 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    openaiConfigured: !!OPENAI_API_KEY
+    geminiConfigured: !!GEMINI_API_KEY,
+    emailConfigured: !!EMAIL_CONFIG.auth.user
   });
 });
 
@@ -784,30 +949,88 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// ==============================================
+// ✅ NEW: CALLBACK REQUEST ENDPOINT
+// ==============================================
+app.post('/api/callback-request', async (req, res) => {
+  try {
+    const { name, email, phone, query, callback_number } = req.body;
+
+    if (!name || !email || !phone || !query || !callback_number) {
+      return res.status(400).json({
+        success: false,
+        error: 'All fields are required'
+      });
+    }
+
+    // Validate callback number
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const cleanedNumber = callback_number.replace(/\D/g, '');
+    if (!phoneRegex.test(cleanedNumber)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid callback number'
+      });
+    }
+
+    console.log('📞 New callback request:', { name, callback_number, query });
+    
+    // Send email
+    const emailSent = await sendCallbackEmail(
+      { name, email, phone },
+      query,
+      cleanedNumber
+    );
+
+    if (emailSent) {
+      res.json({
+        success: true,
+        message: 'Callback request received successfully'
+      });
+    } else {
+      res.json({
+        success: false,
+        message: 'Failed to send email notification'
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Callback request error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process callback request'
+    });
+  }
+});
+
 app.get('/api/test', async (req, res) => {
   try {
-    if (!OPENAI_API_KEY) {
-      return res.json({ 
-        success: true, 
+    if (!GEMINI_API_KEY) {
+      return res.json({
+        success: true,
         message: '✅ Server is working!',
-        openaiStatus: 'Not configured (using Knowledge Base only)',
+        geminiStatus: 'Not configured (using Knowledge Base only)',
+        emailStatus: EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not configured',
         knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
         mode: 'Knowledge Base Mode'
       });
     }
 
-    const reply = await callOpenAI('Say "Hello! The OpenAI API is working!" in one sentence.');
+    const reply = await callGemini('Say "Hello! The Gemini API is working!" in one sentence.');
     res.json({ 
       success: true, 
-      message: '✅ OpenAI API is WORKING!',
+      message: '✅ Gemini API is WORKING!',
       testReply: reply,
-      knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length
+      emailStatus: EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not configured',
+      knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length,
+      model: 'Google Gemini Pro'
     });
   } catch (error) {
     res.json({ 
       success: true, 
       message: '✅ Server is working!',
-      openaiStatus: 'Unavailable (' + error.message + ')',
+      geminiStatus: 'Unavailable (' + error.message + ')',
+      emailStatus: EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not configured',
       fallbackMode: 'Using comprehensive Knowledge Base',
       knowledgeBaseTopics: Object.keys(KNOWLEDGE_BASE).length
     });
@@ -836,9 +1059,11 @@ app.post('/api/chat', async (req, res) => {
     ];
 
     const GENERAL_FALLBACK = [
-  "For better assistance, we recommend connecting with us directly. 📞\n\nPlease feel free to contact our organization using the details below:\n\n📞 Phone: <a href='tel:01352776225'>0135-2776225</a>\n📱 Mobile: <a href='tel:+918191912999'>+91-8191912999</a>\n📧 Email: <a href='mailto:info@vantagehall.org'>info@vantagehall.org</a>\n\nOur team will be happy to assist you."
-];
+      "For better assistance, we recommend connecting with us directly. 📞\n\nPlease feel free to contact our organization using the details below:\n\n📞 Phone: 0135-2776225\n📱 Mobile: +91-8191912999\n📧 Email: info@vantagehall.org\n\nOur team will be happy to assist you.",
+      "We believe direct communication works best. 😊\n\nKindly reach out to our organization through the contact details mentioned below:\n\n📞 0135-2776225\n📱 +91-8191912999\n📧 info@vantagehall.org\n\nWe look forward to assisting you."
+    ];
 
+    // Handle greetings
     if (/^(hi|hello|hey|good morning|good afternoon|good evening)/i.test(message.trim())) {
       const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
       return res.json({ 
@@ -848,6 +1073,7 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    // Try knowledge base first
     const knowledgeMatch = findBestMatch(message, lastTopic, lastOptionLevel, lastSelectedOption);
     
     if (knowledgeMatch) {
@@ -876,39 +1102,30 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Try OpenAI only if API key is configured
-    if (OPENAI_API_KEY) {
+    // Try Gemini API if configured
+    if (GEMINI_API_KEY) {
       try {
-        const systemContext = `
-School Information:
-Location: Doonga, Dehradun - 248007
-Phone: 0135-2776225
-Email: info@vantagehall.org
-Admissions: +91-8191912999, +91-7078311863
-
-User question: ${message}`;
-
-        const reply = await callOpenAI(systemContext);
+        const reply = await callGemini(message);
         
         return res.json({ 
           success: true, 
-          reply: reply.trim() + "\n\n🤖 *AI-Powered Response*",
+          reply: reply.trim() + "\n\n🤖 *Powered by Google Gemini*",
           mode: 'ai-powered'
         });
         
-      } catch (openaiError) {
-        console.log('⚠️ OpenAI unavailable, using fallback');
-        // Fall through to general fallback
+      } catch (geminiError) {
+        console.log('⚠️ Gemini unavailable, triggering callback'); // ✅ UPDATED
       }
     }
 
-    // General fallback when OpenAI is not available or configured
-    const fallback = GENERAL_FALLBACK[Math.floor(Math.random() * GENERAL_FALLBACK.length)];
-    
+    // ✅ NEW: If no match found, trigger callback collection
+    console.log('🔄 No match found - triggering callback collection');
     return res.json({ 
       success: true, 
-      reply: fallback,
-      mode: 'general-fallback'
+      reply: "I apologize, but I don't have specific information about that right now. 😊\n\nWould you like me to have someone from our team call you back to answer your question?\n\nIf yes, please provide your contact number below:",
+      mode: 'callback-request',
+      requiresCallback: true,
+      userQuery: message
     });
 
   } catch (error) {
@@ -931,26 +1148,24 @@ app.listen(PORT, () => {
   console.log('╚═══════════════════════════════════════════╝');
   console.log(`🌐 Server: http://localhost:${PORT}`);
   console.log(`🧪 Test API: http://localhost:${PORT}/api/test`);
-  console.log(`🤖 AI Model: ${OPENAI_API_KEY ? 'OpenAI GPT-4o-mini ✅' : 'Not Configured ⚠️'}`);
+  console.log(`🤖 AI Model: ${GEMINI_API_KEY ? 'Google Gemini Pro ✅' : 'Not Configured ⚠️'}`);
   console.log(`📚 Knowledge Base: ${Object.keys(KNOWLEDGE_BASE).length} topics ✅`);
-  console.log(`📧 Email: ${EMAIL_CONFIG.auth.user ? 'Configured ✅' : 'Not Configured ❌'}`);
+  console.log(`📧 Email: ${EMAIL_CONFIG.auth.user !== 'your-email@gmail.com' ? 'Configured ✅' : 'Not Configured ❌'}`);
   console.log(`✅ FAQ Navigation: Working`);
   console.log(`💚 Emotional Quotient: Added`);
   console.log(`⬅️ Back to Menu: Enabled`);
-  console.log(`🔧 Fallback Mode: ${OPENAI_API_KEY ? 'OpenAI Primary' : 'Knowledge Base Only'}`);
+  console.log(`📞 Callback System: Active ✅`); // ✅ NEW
+  console.log(`🔧 Fallback Mode: ${GEMINI_API_KEY ? 'Gemini Primary → Callback' : 'Knowledge Base → Callback'}`);
   console.log('╚═══════════════════════════════════════════\n');
-  console.log('🚀 Ready to chat!\n');
+  console.log('🚀 Ready to chat with email callback support!\n');
   
-  if (!OPENAI_API_KEY) {
-    console.log('⚠️  NOTE: OpenAI API key not configured.');
-    console.log('   Chatbot will work using Knowledge Base only.');
-    console.log('   To enable AI features, add OPENAI_API_KEY to .env\n');
+  if (!GEMINI_API_KEY) {
+    console.log('⚠️ NOTE: Gemini API key not configured.');
+    console.log('   Chatbot will use Knowledge Base + Callback system.\n');
+  }
+  
+  if (EMAIL_CONFIG.auth.user === 'your-email@gmail.com') {
+    console.log('⚠️ IMPORTANT: Update email credentials in .env file!');
+    console.log('   Callback emails will not be sent until configured.\n');
   }
 });
-
-
-
-
-
-
-
